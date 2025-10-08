@@ -1,12 +1,15 @@
 # bot.py
-import os, discord, random
+import os
+import discord
+import random
 from dotenv import load_dotenv
-from discord.ext import commands
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+GUILD = os.getenv('DISCORD_GUILD')
 
 client = discord.Client()
+
 
 @client.event
 async def on_ready():
@@ -21,18 +24,24 @@ async def on_ready():
     members = '\n - '.join([member.name for member in guild.members])
     print(f'Guild Members:\n - {members}')
 
+
 @client.event
 async def on_member_join(member):
+    for guild in client.guilds:
+        if guild.name == GUILD:
+            break
+
     await member.create_dm()
     await member.dm_channel.send(
         f'Hi {member.name}, welcome to {guild.name}!'
     )
 
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
-    
+
     reply_list = {
         'beer': {
             'receive': ('beer', 'cerveja', 'uma gelada'),
@@ -64,9 +73,12 @@ async def on_message(message):
         }
     }
 
-    if any(reply in message.content for reply in reply_list['beer']['receive']):
+    if any(
+        reply in message.content for reply in reply_list['beer']['receive']
+    ):
         response = random.choice(reply_list['beer']['send'])
         await message.channel.send(response)
+
 
 @client.event
 async def on_error(event, *args, **kwargs):
